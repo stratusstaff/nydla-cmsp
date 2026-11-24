@@ -1,0 +1,181 @@
+/* NYDLA CMSP front — Bez Leda Studios */
+.nydla-cmsp {
+	margin: 1.25rem 0 0;
+}
+
+.nydla-cmsp__empty {
+	margin: 0;
+	padding: 1.5rem;
+	border: 1px dashed rgba(201, 133, 42, 0.7);
+	background: rgba(255, 255, 255, 0.95);
+	color: #3a4f6a;
+	text-align: center;
+}
+
+.nydla-cmsp__logo-grid {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 0.85rem;
+}
+
+.nydla-cmsp__logo {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 5rem;
+	background: #fff;
+	border: 1px solid rgba(19, 35, 58, 0.12);
+	padding: 0.85rem 1rem;
+}
+
+.nydla-cmsp__logo a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	text-decoration: none;
+}
+
+.nydla-cmsp__logo img {
+	display: block;
+	max-width: 100%;
+	max-height: 3.25rem;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+
+.nydla-cmsp__logo-fallback {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: #13233a;
+	text-align: center;
+}
+
+.nydla-band--navy .nydla-cmsp__logo {
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.nydla-cmsp__event-grid,
+.nydla-cmsp__podcast-grid {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.25rem;
+}
+
+.nydla-cmsp__event,
+.nydla-cmsp__podcast {
+	background: #fff;
+	border: 1px solid rgba(19, 35, 58, 0.1);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.nydla-cmsp__event-media,
+.nydla-cmsp__podcast-media {
+	aspect-ratio: 16 / 9;
+	background: #13233a;
+	overflow: hidden;
+}
+
+.nydla-cmsp__podcast-media {
+	aspect-ratio: 1 / 1;
+}
+
+.nydla-cmsp__event-media img,
+.nydla-cmsp__podcast-media img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.nydla-cmsp__event-body,
+.nydla-cmsp__podcast-body {
+	padding: 1.15rem 1.25rem 1.35rem;
+}
+
+.nydla-cmsp__event-title,
+.nydla-cmsp__podcast-title {
+	margin: 0 0 0.35rem;
+	font-size: 1.25rem;
+	line-height: 1.25;
+	color: #13233a;
+}
+
+.nydla-cmsp__event-meta,
+.nydla-cmsp__podcast-cats {
+	margin: 0 0 0.35rem;
+	font-size: 0.85rem;
+	color: #3a4f6a;
+}
+
+.nydla-cmsp__event-excerpt,
+.nydla-cmsp__podcast-bio {
+	margin: 0 0 0.85rem;
+	color: #3a4f6a;
+	font-size: 0.95rem;
+}
+
+.nydla-cmsp__btn {
+	display: inline-block;
+	padding: 0.55rem 1rem;
+	background: #c9852a;
+	color: #13233a;
+	font-weight: 700;
+	text-decoration: none;
+	border: 0;
+}
+
+.nydla-cmsp__btn:hover,
+.nydla-cmsp__btn:focus-visible {
+	filter: brightness(1.05);
+}
+
+.nydla-cmsp__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 0 0 1.5rem;
+}
+
+.nydla-cmsp__chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.4rem 0.85rem;
+	border: 1px solid rgba(19, 35, 58, 0.18);
+	background: #fff;
+	color: #13233a;
+	text-decoration: none;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.nydla-cmsp__chip.is-on,
+.nydla-cmsp__chip:hover,
+.nydla-cmsp__chip:focus-visible {
+	border-color: #c9852a;
+	background: #c9852a;
+	color: #13233a;
+}
+
+@media (max-width: 800px) {
+	.nydla-cmsp__logo-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.nydla-cmsp__event-grid,
+	.nydla-cmsp__podcast-grid {
+		grid-template-columns: 1fr;
+	}
+}
