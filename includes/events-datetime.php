@@ -94,6 +94,40 @@ function nydla_cmsp_event_timestamp( $post ) {
 }
 
 /**
+ * Expose CMSP meta on REST for bulk/API updates.
+ */
+function nydla_cmsp_register_rest_meta() {
+	$common = array(
+		'type'              => 'string',
+		'single'            => true,
+		'show_in_rest'      => true,
+		'auth_callback'     => static function () {
+			return current_user_can( 'edit_posts' );
+		},
+		'sanitize_callback' => 'sanitize_text_field',
+	);
+
+	foreach ( array( 'nydla_sponsor', 'nydla_event', 'nydla_podcast' ) as $type ) {
+		register_post_meta( $type, '_nydla_url', array_merge( $common, array( 'sanitize_callback' => 'esc_url_raw' ) ) );
+		register_post_meta( $type, '_nydla_active', $common );
+	}
+
+	register_post_meta( 'nydla_sponsor', '_nydla_page_url', array_merge( $common, array( 'sanitize_callback' => 'esc_url_raw' ) ) );
+	register_post_meta( 'nydla_event', '_nydla_datetime', $common );
+	register_post_meta( 'nydla_event', '_nydla_date', $common );
+	register_post_meta( 'nydla_event', '_nydla_venue', $common );
+	register_post_meta(
+		'nydla_podcast',
+		'_nydla_bio',
+		array_merge(
+			$common,
+			array( 'sanitize_callback' => 'sanitize_textarea_field' )
+		)
+	);
+}
+add_action( 'init', 'nydla_cmsp_register_rest_meta', 25 );
+
+/**
  * Migrate free-text event dates into _nydla_datetime once.
  */
 function nydla_cmsp_migrate_event_datetimes() {
