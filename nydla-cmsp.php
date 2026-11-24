@@ -24,6 +24,7 @@ define( 'NYDLA_CMSP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NYDLA_CMSP_URI', plugin_dir_url( __FILE__ ) );
 
 require_once NYDLA_CMSP_DIR . 'includes/post-types.php';
+require_once NYDLA_CMSP_DIR . 'includes/events-datetime.php';
 require_once NYDLA_CMSP_DIR . 'includes/meta.php';
 require_once NYDLA_CMSP_DIR . 'includes/query.php';
 require_once NYDLA_CMSP_DIR . 'includes/shortcode.php';

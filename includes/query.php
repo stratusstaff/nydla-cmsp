@@ -42,7 +42,7 @@ function nydla_cmsp_get_items( $type, $args = array() ) {
 		array(
 			'post_type'              => $post_type,
 			'post_status'            => 'publish',
-			'posts_per_page'         => 100,
+			'posts_per_page'         => 200,
 			'orderby'                => array(
 				'menu_order' => 'ASC',
 				'title'      => 'ASC',
@@ -102,8 +102,14 @@ function nydla_cmsp_item_data( $post ) {
 		$data['page_url'] = (string) get_post_meta( $post->ID, '_nydla_page_url', true );
 	}
 	if ( 'nydla_event' === $post->post_type ) {
-		$data['date']  = (string) get_post_meta( $post->ID, '_nydla_date', true );
-		$data['venue'] = (string) get_post_meta( $post->ID, '_nydla_venue', true );
+		$mysql = (string) get_post_meta( $post->ID, '_nydla_datetime', true );
+		if ( ! $mysql ) {
+			$mysql = nydla_cmsp_normalize_event_datetime( (string) get_post_meta( $post->ID, '_nydla_date', true ) );
+		}
+		$data['datetime']   = $mysql;
+		$data['timestamp']  = nydla_cmsp_event_timestamp( $post );
+		$data['date']       = $mysql ? nydla_cmsp_format_event_datetime( $mysql ) : (string) get_post_meta( $post->ID, '_nydla_date', true );
+		$data['venue']      = (string) get_post_meta( $post->ID, '_nydla_venue', true );
 	}
 	if ( 'nydla_podcast' === $post->post_type ) {
 		$data['bio'] = (string) get_post_meta( $post->ID, '_nydla_bio', true );
@@ -119,4 +125,45 @@ function nydla_cmsp_item_data( $post ) {
 	}
 
 	return $data;
+}
+
+/**
+ * Render one event card list (Upcoming / Past).
+ *
+ * @param array  $list  Items.
+ * @param string $empty Empty message.
+ */
+function nydla_cmsp_render_event_list( $list, $empty ) {
+	if ( empty( $list ) ) {
+		echo '<p class="nydla-cmsp__empty">' . esc_html( $empty ) . '</p>';
+		return;
+	}
+	echo '<ul class="nydla-cmsp__event-grid">';
+	foreach ( $list as $item ) {
+		?>
+		<li class="nydla-cmsp__event">
+			<?php if ( ! empty( $item['image'] ) ) : ?>
+				<div class="nydla-cmsp__event-media">
+					<img src="<?php echo esc_url( $item['image'] ); ?>" alt="" loading="lazy" decoding="async">
+				</div>
+			<?php endif; ?>
+			<div class="nydla-cmsp__event-body">
+				<h3 class="nydla-cmsp__event-title"><?php echo esc_html( $item['title'] ); ?></h3>
+				<?php if ( ! empty( $item['date'] ) ) : ?>
+					<p class="nydla-cmsp__event-meta"><?php echo esc_html( $item['date'] ); ?></p>
+				<?php endif; ?>
+				<?php if ( ! empty( $item['venue'] ) ) : ?>
+					<p class="nydla-cmsp__event-meta"><?php echo esc_html( $item['venue'] ); ?></p>
+				<?php endif; ?>
+				<?php if ( ! empty( $item['excerpt'] ) ) : ?>
+					<p class="nydla-cmsp__event-excerpt"><?php echo esc_html( $item['excerpt'] ); ?></p>
+				<?php endif; ?>
+				<?php if ( ! empty( $item['url'] ) ) : ?>
+					<p><a class="nydla-cmsp__btn" href="<?php echo esc_url( $item['url'] ); ?>"><?php esc_html_e( 'Learn more', 'nydla-cmsp' ); ?></a></p>
+				<?php endif; ?>
+			</div>
+		</li>
+		<?php
+	}
+	echo '</ul>';
 }

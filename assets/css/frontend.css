@@ -60,6 +60,23 @@
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
+.nydla-cmsp__events-heading {
+	margin: 0 0 1rem;
+	font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+	line-height: 1.2;
+	color: #13233a;
+}
+
+.nydla-cmsp__events-section + .nydla-cmsp__events-divider {
+	margin: 2.25rem 0;
+	border: 0;
+	border-top: 1px solid rgba(19, 35, 58, 0.16);
+}
+
+.nydla-cmsp__events-section--past .nydla-cmsp__events-heading {
+	color: #3a4f6a;
+}
+
 .nydla-cmsp__event-grid,
 .nydla-cmsp__podcast-grid {
 	list-style: none;

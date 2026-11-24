@@ -49,8 +49,10 @@ function nydla_cmsp_maybe_seed() {
 		true
 	);
 	if ( ! is_wp_error( $event_id ) ) {
+		$mysql = '2027-03-15 18:00:00';
 		update_post_meta( $event_id, '_nydla_url', home_url( '/events/' ) );
-		update_post_meta( $event_id, '_nydla_date', 'Spring 2027' );
+		update_post_meta( $event_id, '_nydla_datetime', $mysql );
+		update_post_meta( $event_id, '_nydla_date', nydla_cmsp_format_event_datetime( $mysql ) );
 		update_post_meta( $event_id, '_nydla_venue', 'New York · Hybrid' );
 		update_post_meta( $event_id, '_nydla_active', '1' );
 	}

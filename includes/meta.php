@@ -92,13 +92,14 @@ function nydla_cmsp_render_sponsor_meta( $post ) {
 function nydla_cmsp_render_event_meta( $post ) {
 	wp_nonce_field( 'nydla_cmsp_save_meta', 'nydla_cmsp_nonce' );
 	nydla_cmsp_render_shared_fields( $post, __( 'Registration / detail URL', 'nydla-cmsp' ) );
-	$date  = (string) get_post_meta( $post->ID, '_nydla_date', true );
-	$venue = (string) get_post_meta( $post->ID, '_nydla_venue', true );
+	$datetime = nydla_cmsp_get_event_datetime_local_value( $post->ID );
+	$venue    = (string) get_post_meta( $post->ID, '_nydla_venue', true );
 	?>
 	<p>
-		<label for="nydla_date"><strong><?php esc_html_e( 'Date / time', 'nydla-cmsp' ); ?></strong></label><br>
-		<input type="text" class="widefat" id="nydla_date" name="nydla_date" value="<?php echo esc_attr( $date ); ?>" placeholder="<?php esc_attr_e( 'e.g. March 12, 2027 · 6:00 PM ET', 'nydla-cmsp' ); ?>">
+		<label for="nydla_datetime"><strong><?php esc_html_e( 'Date / time', 'nydla-cmsp' ); ?></strong></label><br>
+		<input type="datetime-local" class="widefat" id="nydla_datetime" name="nydla_datetime" value="<?php echo esc_attr( $datetime ); ?>">
 	</p>
+	<p class="description"><?php esc_html_e( 'Use the calendar picker. This date sorts Upcoming vs Past Events automatically.', 'nydla-cmsp' ); ?></p>
 	<p>
 		<label for="nydla_venue"><strong><?php esc_html_e( 'Venue / location', 'nydla-cmsp' ); ?></strong></label><br>
 		<input type="text" class="widefat" id="nydla_venue" name="nydla_venue" value="<?php echo esc_attr( $venue ); ?>" placeholder="<?php esc_attr_e( 'e.g. Online · Zoom', 'nydla-cmsp' ); ?>">
@@ -153,7 +154,15 @@ function nydla_cmsp_save_meta( $post_id ) {
 		update_post_meta( $post_id, '_nydla_page_url', $page );
 	}
 	if ( 'nydla_event' === $post->post_type ) {
-		update_post_meta( $post_id, '_nydla_date', isset( $_POST['nydla_date'] ) ? sanitize_text_field( wp_unslash( $_POST['nydla_date'] ) ) : '' );
+		$raw = isset( $_POST['nydla_datetime'] ) ? sanitize_text_field( wp_unslash( $_POST['nydla_datetime'] ) ) : '';
+		$mysql = nydla_cmsp_normalize_event_datetime( $raw );
+		if ( $mysql ) {
+			update_post_meta( $post_id, '_nydla_datetime', $mysql );
+			update_post_meta( $post_id, '_nydla_date', nydla_cmsp_format_event_datetime( $mysql ) );
+		} else {
+			delete_post_meta( $post_id, '_nydla_datetime' );
+			delete_post_meta( $post_id, '_nydla_date' );
+		}
 		update_post_meta( $post_id, '_nydla_venue', isset( $_POST['nydla_venue'] ) ? sanitize_text_field( wp_unslash( $_POST['nydla_venue'] ) ) : '' );
 	}
 	if ( 'nydla_podcast' === $post->post_type ) {

@@ -1,0 +1,139 @@
+<?php
+/**
+ * Event calendar datetime helpers + one-time migration.
+ *
+ * @package Nydla_Cmsp
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Normalize submitted / legacy value to site-local MySQL datetime or empty.
+ *
+ * @param string $raw Raw input.
+ * @return string Y-m-d H:i:s
+ */
+function nydla_cmsp_normalize_event_datetime( $raw ) {
+	$raw = trim( (string) $raw );
+	if ( '' === $raw ) {
+		return '';
+	}
+
+	// datetime-local: 2027-03-12T18:00
+	if ( preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/', $raw ) ) {
+		$raw = str_replace( 'T', ' ', substr( $raw, 0, 16 ) ) . ':00';
+	}
+
+	$tz = wp_timezone();
+	$dt = date_create( $raw, $tz );
+	if ( ! $dt ) {
+		$ts = strtotime( $raw );
+		if ( false === $ts ) {
+			return '';
+		}
+		$dt = ( new DateTimeImmutable( '@' . $ts ) )->setTimezone( $tz );
+	}
+
+	return $dt->format( 'Y-m-d H:i:s' );
+}
+
+/**
+ * Format stored datetime for display.
+ *
+ * @param string $mysql Y-m-d H:i:s.
+ * @return string
+ */
+function nydla_cmsp_format_event_datetime( $mysql ) {
+	$dt = date_create( (string) $mysql, wp_timezone() );
+	if ( ! $dt ) {
+		return '';
+	}
+	return wp_date( 'F j, Y · g:i A', $dt->getTimestamp() );
+}
+
+/**
+ * Value for input[type=datetime-local].
+ *
+ * @param int $post_id Post ID.
+ * @return string
+ */
+function nydla_cmsp_get_event_datetime_local_value( $post_id ) {
+	$mysql = (string) get_post_meta( $post_id, '_nydla_datetime', true );
+	if ( ! $mysql ) {
+		$mysql = nydla_cmsp_normalize_event_datetime( (string) get_post_meta( $post_id, '_nydla_date', true ) );
+	}
+	if ( ! $mysql ) {
+		return '';
+	}
+	$dt = date_create( $mysql, wp_timezone() );
+	if ( ! $dt ) {
+		return '';
+	}
+	return $dt->format( 'Y-m-d\TH:i' );
+}
+
+/**
+ * Unix timestamp (UTC) for comparison, or 0.
+ *
+ * @param int|WP_Post $post Post.
+ * @return int
+ */
+function nydla_cmsp_event_timestamp( $post ) {
+	$post_id = is_object( $post ) ? (int) $post->ID : (int) $post;
+	$mysql   = (string) get_post_meta( $post_id, '_nydla_datetime', true );
+	if ( ! $mysql ) {
+		$mysql = nydla_cmsp_normalize_event_datetime( (string) get_post_meta( $post_id, '_nydla_date', true ) );
+	}
+	if ( ! $mysql ) {
+		return 0;
+	}
+	$dt = date_create( $mysql, wp_timezone() );
+	return $dt ? $dt->getTimestamp() : 0;
+}
+
+/**
+ * Migrate free-text event dates into _nydla_datetime once.
+ */
+function nydla_cmsp_migrate_event_datetimes() {
+	if ( get_option( 'nydla_cmsp_event_datetime_migrated' ) ) {
+		return;
+	}
+
+	$q = new WP_Query(
+		array(
+			'post_type'      => 'nydla_event',
+			'post_status'    => 'any',
+			'posts_per_page' => 500,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		)
+	);
+
+	foreach ( $q->posts as $post_id ) {
+		$existing = nydla_cmsp_normalize_event_datetime( (string) get_post_meta( $post_id, '_nydla_datetime', true ) );
+		if ( $existing ) {
+			update_post_meta( $post_id, '_nydla_datetime', $existing );
+			update_post_meta( $post_id, '_nydla_date', nydla_cmsp_format_event_datetime( $existing ) );
+			continue;
+		}
+
+		$legacy = (string) get_post_meta( $post_id, '_nydla_date', true );
+		$mysql  = nydla_cmsp_normalize_event_datetime( $legacy );
+		if ( ! $mysql ) {
+			$title = get_the_title( $post_id );
+			if ( false !== stripos( $title, 'Spring' ) ) {
+				$mysql = '2027-03-15 18:00:00';
+			} else {
+				continue;
+			}
+		}
+		update_post_meta( $post_id, '_nydla_datetime', $mysql );
+		update_post_meta( $post_id, '_nydla_date', nydla_cmsp_format_event_datetime( $mysql ) );
+	}
+
+	update_option( 'nydla_cmsp_event_datetime_migrated', 1, false );
+}
+add_action( 'admin_init', 'nydla_cmsp_migrate_event_datetimes' );
+add_action( 'init', 'nydla_cmsp_migrate_event_datetimes', 30 );

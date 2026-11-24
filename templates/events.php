@@ -1,6 +1,6 @@
 <?php
 /**
- * Event banners grid.
+ * Event banners — Upcoming vs Past.
  *
  * @package Nydla_Cmsp
  * @var array $items
@@ -9,36 +9,62 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+$now      = ( new DateTimeImmutable( 'now', wp_timezone() ) )->getTimestamp();
+$upcoming = array();
+$past     = array();
+$undated  = array();
+
+foreach ( $items as $item ) {
+	$ts = isset( $item['timestamp'] ) ? (int) $item['timestamp'] : 0;
+	if ( $ts <= 0 ) {
+		$undated[] = $item;
+		continue;
+	}
+	if ( $ts >= $now ) {
+		$upcoming[] = $item;
+	} else {
+		$past[] = $item;
+	}
+}
+
+usort(
+	$upcoming,
+	static function ( $a, $b ) {
+		return ( (int) $a['timestamp'] ) <=> ( (int) $b['timestamp'] );
+	}
+);
+usort(
+	$past,
+	static function ( $a, $b ) {
+		return ( (int) $b['timestamp'] ) <=> ( (int) $a['timestamp'] );
+	}
+);
 ?>
 <div class="nydla-cmsp nydla-cmsp--events" data-nydla-cmsp="events">
 	<?php if ( empty( $items ) ) : ?>
 		<p class="nydla-cmsp__empty"><?php esc_html_e( 'No active events yet. Add banners in WP Admin → NYDLA CMSP → Events.', 'nydla-cmsp' ); ?></p>
 	<?php else : ?>
-		<ul class="nydla-cmsp__event-grid">
-			<?php foreach ( $items as $item ) : ?>
-				<li class="nydla-cmsp__event">
-					<?php if ( $item['image'] ) : ?>
-						<div class="nydla-cmsp__event-media">
-							<img src="<?php echo esc_url( $item['image'] ); ?>" alt="" loading="lazy" decoding="async">
-						</div>
-					<?php endif; ?>
-					<div class="nydla-cmsp__event-body">
-						<h3 class="nydla-cmsp__event-title"><?php echo esc_html( $item['title'] ); ?></h3>
-						<?php if ( ! empty( $item['date'] ) ) : ?>
-							<p class="nydla-cmsp__event-meta"><?php echo esc_html( $item['date'] ); ?></p>
-						<?php endif; ?>
-						<?php if ( ! empty( $item['venue'] ) ) : ?>
-							<p class="nydla-cmsp__event-meta"><?php echo esc_html( $item['venue'] ); ?></p>
-						<?php endif; ?>
-						<?php if ( ! empty( $item['excerpt'] ) ) : ?>
-							<p class="nydla-cmsp__event-excerpt"><?php echo esc_html( $item['excerpt'] ); ?></p>
-						<?php endif; ?>
-						<?php if ( ! empty( $item['url'] ) ) : ?>
-							<p><a class="nydla-cmsp__btn" href="<?php echo esc_url( $item['url'] ); ?>"><?php esc_html_e( 'Learn more', 'nydla-cmsp' ); ?></a></p>
-						<?php endif; ?>
-					</div>
-				</li>
-			<?php endforeach; ?>
-		</ul>
+		<section class="nydla-cmsp__events-section nydla-cmsp__events-section--upcoming" aria-labelledby="nydla-cmsp-upcoming">
+			<h2 id="nydla-cmsp-upcoming" class="nydla-cmsp__events-heading"><?php esc_html_e( 'Upcoming Events', 'nydla-cmsp' ); ?></h2>
+			<?php
+			nydla_cmsp_render_event_list(
+				array_merge( $upcoming, $undated ),
+				__( 'No upcoming events right now.', 'nydla-cmsp' )
+			);
+			?>
+		</section>
+
+		<hr class="nydla-cmsp__events-divider" />
+
+		<section class="nydla-cmsp__events-section nydla-cmsp__events-section--past" aria-labelledby="nydla-cmsp-past">
+			<h2 id="nydla-cmsp-past" class="nydla-cmsp__events-heading"><?php esc_html_e( 'Past Events', 'nydla-cmsp' ); ?></h2>
+			<?php
+			nydla_cmsp_render_event_list(
+				$past,
+				__( 'No past events yet.', 'nydla-cmsp' )
+			);
+			?>
+		</section>
 	<?php endif; ?>
 </div>
