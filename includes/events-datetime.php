@@ -171,3 +171,34 @@ function nydla_cmsp_migrate_event_datetimes() {
 }
 add_action( 'admin_init', 'nydla_cmsp_migrate_event_datetimes' );
 add_action( 'init', 'nydla_cmsp_migrate_event_datetimes', 30 );
+
+/**
+ * Ensure at least one past demo event exists for the Past Events section.
+ */
+function nydla_cmsp_ensure_past_demo_event() {
+	if ( get_option( 'nydla_cmsp_past_demo_v1' ) ) {
+		return;
+	}
+
+	$id = wp_insert_post(
+		array(
+			'post_type'    => 'nydla_event',
+			'post_title'   => 'NYDLA Winter Meetup 2024',
+			'post_excerpt' => 'A past gathering for members and sponsors.',
+			'post_status'  => 'publish',
+			'menu_order'   => 20,
+		),
+		true
+	);
+	if ( ! is_wp_error( $id ) ) {
+		$mysql = '2024-01-18 17:00:00';
+		update_post_meta( $id, '_nydla_url', home_url( '/events/' ) );
+		update_post_meta( $id, '_nydla_datetime', $mysql );
+		update_post_meta( $id, '_nydla_date', nydla_cmsp_format_event_datetime( $mysql ) );
+		update_post_meta( $id, '_nydla_venue', 'Online' );
+		update_post_meta( $id, '_nydla_active', '1' );
+	}
+
+	update_option( 'nydla_cmsp_past_demo_v1', 1, false );
+}
+add_action( 'init', 'nydla_cmsp_ensure_past_demo_event', 35 );
